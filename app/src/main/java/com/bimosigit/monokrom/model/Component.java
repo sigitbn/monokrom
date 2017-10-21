@@ -5,4 +5,5 @@ package com.bimosigit.monokrom.model;
  */
 
 public class Component {
+
 }
