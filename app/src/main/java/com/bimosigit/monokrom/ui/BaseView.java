@@ -5,5 +5,4 @@ package com.bimosigit.monokrom.ui;
  */
 
 public interface BaseView {
-    void setLoadingIndicator(boolean active);
 }

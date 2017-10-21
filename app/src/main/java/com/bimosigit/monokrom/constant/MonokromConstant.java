@@ -5,5 +5,6 @@ package com.bimosigit.monokrom.constant;
  */
 
 public class MonokromConstant {
-    public static final String FIREBASE_CHILD_IMAGES = "images";
+    public static final String FIREBASE_CHILD_IMAGES = "images",
+            IMAGE_PATH = "image_path";
 }
