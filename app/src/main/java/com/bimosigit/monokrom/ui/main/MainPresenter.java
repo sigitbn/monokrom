@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import com.bimosigit.monokrom.R;
 import com.bimosigit.monokrom.constant.MonokromConstant;
 import com.bimosigit.monokrom.ui.processDetail.ProcessDetailActivity;
+import com.bimosigit.monokrom.util.BitmapConverter;
 import com.bimosigit.monokrom.viewholder.ImageViewHolder;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -74,14 +75,7 @@ public class MainPresenter implements MainContract.Presenter {
             @Override
             protected void onBindViewHolder(final ImageViewHolder holder, int position, final String fileName) {
                 loadImage(holder.itemImageView, fileName);
-
-                holder.itemImageView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View itemView) {
-                        view.startActivity(ProcessDetailActivity.class, fileName);
-                    }
-                });
-
+                holder.itemTextView.setText(fileName);
                 holder.deleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -146,8 +140,16 @@ public class MainPresenter implements MainContract.Presenter {
             ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                    final Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
                     itemImageView.setImageBitmap(bitmap);
+                    itemImageView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View item) {
+                            byte[] bytesArray = BitmapConverter.bitmap2ByteArray(bitmap);
+                            view.startActivity(ProcessDetailActivity.class, bytesArray);
+                        }
+                    });
+
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override

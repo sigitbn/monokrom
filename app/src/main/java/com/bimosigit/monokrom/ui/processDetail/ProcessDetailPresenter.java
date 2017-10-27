@@ -1,18 +1,24 @@
 package com.bimosigit.monokrom.ui.processDetail;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.support.annotation.NonNull;
-import android.widget.ImageView;
+import android.util.Log;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.storage.FileDownloadTask;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+import com.bimosigit.monokrom.model.Component;
+import com.bimosigit.monokrom.model.Person;
+import com.bimosigit.monokrom.processor.BlackWhite;
+import com.bimosigit.monokrom.processor.ChainCode;
+import com.bimosigit.monokrom.processor.Convolution;
+import com.bimosigit.monokrom.processor.Equalization;
+import com.bimosigit.monokrom.processor.FaceDetection;
+import com.bimosigit.monokrom.processor.GrayScale;
+import com.bimosigit.monokrom.processor.MergeByteImage;
+import com.bimosigit.monokrom.processor.Thresholding;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by sigitbn on 10/21/17.
@@ -20,78 +26,103 @@ import java.io.IOException;
 
 public class ProcessDetailPresenter implements ProcessDetailContract.Presenter {
 
-    private final StorageReference imagesRef;
-    ProcessDetailContract.View view;
+    private ProcessDetailContract.View view;
+    private List<Integer> thresholds;
 
     ProcessDetailPresenter(ProcessDetailFragment view) {
         this.view = view;
-
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        imagesRef = storage.getReference().child("images");
-
     }
 
     @Override
-    public void processGrayScale(Bitmap bitmap) {
-        view.onGrayScaleProcessSuccess(bitmap);
+    public void processGrayScale(byte[] bytes) {
+
+        view.onGrayScaleProcessSuccess(GrayScale.getImageGrayScale(bytes));
     }
 
     @Override
-    public void processConvolution(Bitmap bitmap) {
-        view.onConvolutionProcessSuccess(bitmap);
+    public void processConvolution(byte[] bytes) {
+        thresholds = Thresholding.getThreshold(bytes);
+        view.onConvolutionProcessSuccess(Convolution.getImageConvolution(bytes));
     }
 
     @Override
-    public void processEqualization(Bitmap bitmap) {
-        view.onEqualizationProcessSuccess(bitmap);
+    public void processEqualization(byte[] bytes) {
+        view.onEqualizationProcessSuccess(Equalization.getImageEqualization(bytes));
     }
 
     @Override
-    public void processThresholding(Bitmap bitmap) {
-        view.onThresholdingProcessSuccess(bitmap);
-    }
+    public void processThresholding(byte[] bytes) {
 
-    @Override
-    public void loadImage(String filename) {
-        StorageReference ref = imagesRef.child(filename);
-        try {
-            final File localFile = File.createTempFile("Images", "bmp");
-            ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
-                    view.onImageLoaded(bitmap);
+        for (int threshold : thresholds) {
+            byte[] blackWhiteImage = BlackWhite.getBlackWhite(bytes, threshold);
+
+            List<Component> components = ChainCode.getComponents(blackWhiteImage);
+            if (components.size() > 5) {
+
+                blackWhiteImage = MergeByteImage.getBlackImage(blackWhiteImage);
+
+                for (Component component : components) {
+
+                    blackWhiteImage = MergeByteImage.merge(blackWhiteImage, component.getComponentPixels());
+//                    blackWhiteImage = MergeByteImage.drawCentroid(blackWhiteImage, component.getCentroid());
                 }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
+//                bytesList.add(blackWhiteImage);
+                view.onThresholdingProcessSuccess(components, blackWhiteImage);
+//                view.onComponentsDetected(components, blackWhiteImage);
+                break;
+            }
         }
+
+
     }
 
-    private void loadImage(final ImageView itemImageView, String filename) {
+    @Override
+    public void ProcessRecognition(byte[] bytes, List<Component> components) {
+        final Person person = FaceDetection.recognize(bytes, components);
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference databaseReference = database.getReference("person");
 
-        StorageReference ref = imagesRef.child(filename);
-        try {
-            final File localFile = File.createTempFile("Images", "bmp");
-            ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
-                    itemImageView.setImageBitmap(bitmap);
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+        ValueEventListener eventListener = new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Person result = person;
+                double minimumDiffRatio = 9999;
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    Person current = child.getValue(Person.class);
+                    if (current != null) {
+                        double currentDiffRatio = Math.abs(current.getGoldenRatio() - person.getGoldenRatio());
+                        if (minimumDiffRatio > currentDiffRatio) {
+                            result = current;
+                            minimumDiffRatio = currentDiffRatio;
+                        }
+                    }
 
                 }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+                result.setBytes(person.getBytes());
+                view.onImageRecognized(result);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        databaseReference.addListenerForSingleValueEvent(eventListener);
     }
+
+    @Override
+    public void saveData(byte[] bytesResult, List<Component> components) {
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference databaseReference = database.getReference("person");
+        Person person = FaceDetection.recognize(bytesResult, components);
+        databaseReference.push().setValue(person);
+
+        view.onImageSaved(person);
+    }
+
+
 }

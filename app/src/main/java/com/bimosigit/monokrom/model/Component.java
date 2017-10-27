@@ -6,4 +6,25 @@ package com.bimosigit.monokrom.model;
 
 public class Component {
 
+    int[] componentPixels;
+    String chainCode;
+    int centroid;
+
+    public Component(int[] componentPixels, String chainCode, int centroid) {
+        this.componentPixels = componentPixels;
+        this.chainCode = chainCode;
+        this.centroid = centroid;
+    }
+
+    public int[] getComponentPixels() {
+        return componentPixels;
+    }
+
+    public String getChainCode() {
+        return chainCode;
+    }
+
+    public int getCentroid() {
+        return centroid;
+    }
 }

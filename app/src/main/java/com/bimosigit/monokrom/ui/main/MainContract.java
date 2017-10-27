@@ -12,7 +12,7 @@ public class MainContract {
     interface View extends BaseView {
         void onRecyclerViewAdapterCreated(FirebaseRecyclerAdapter adapter);
 
-        void startActivity(Class activityClass, String path);
+        void startActivity(Class activityClass, byte[] bytes);
     }
 
     interface Presenter {

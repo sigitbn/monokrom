@@ -6,12 +6,11 @@ import android.graphics.Color;
 import com.bimosigit.monokrom.util.BitmapConverter;
 
 /**
- * Created by sigitbn on 10/21/17.
+ * Created by sigitbn on 10/22/17.
  */
 
-public class GrayScale {
-
-    public static byte[] getImageGrayScale(byte[] bytes) {
+public class BlackWhite {
+    public static byte[] getBlackWhite(byte[] bytes, int threshold) {
         Bitmap bitmap = BitmapConverter.byteArray2Bitmap(bytes);
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
@@ -19,19 +18,13 @@ public class GrayScale {
         int[] pixels = new int[width * height];
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
 
-        for (int index = 0; index < pixels.length; index++) {
-            int pixel = pixels[index];
-            int red = Color.red(pixel);
-            int green = Color.green(pixel);
-            int blue = Color.blue(pixel);
-
-            int alpha = (int) (0.299 * red + 0.587 * green + 0.114 * blue);
-            pixels[index] = Color.rgb(alpha, alpha, alpha);
+        for (int i = 0; i < pixels.length; i++) {
+            int pixel = Color.green(pixels[i]) > threshold ? 0 : 255;
+            pixels[i] = Color.rgb(pixel, pixel, pixel);
         }
 
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
         return BitmapConverter.bitmap2ByteArray(bitmap);
     }
-
 }

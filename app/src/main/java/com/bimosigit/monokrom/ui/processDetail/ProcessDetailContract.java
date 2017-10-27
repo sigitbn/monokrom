@@ -1,8 +1,10 @@
 package com.bimosigit.monokrom.ui.processDetail;
 
-import android.graphics.Bitmap;
-
+import com.bimosigit.monokrom.model.Component;
+import com.bimosigit.monokrom.model.Person;
 import com.bimosigit.monokrom.ui.BaseView;
+
+import java.util.List;
 
 /**
  * Created by sigitbn on 10/21/17.
@@ -11,26 +13,32 @@ import com.bimosigit.monokrom.ui.BaseView;
 public class ProcessDetailContract {
 
     interface View extends BaseView {
-        void onGrayScaleProcessSuccess(Bitmap bitmap);
+        void onGrayScaleProcessSuccess(byte[] bytes);
 
-        void onConvolutionProcessSuccess(Bitmap bitmap);
+        void onConvolutionProcessSuccess(byte[] bytes);
 
-        void onEqualizationProcessSuccess(Bitmap bitmap);
+        void onEqualizationProcessSuccess(byte[] bytes);
 
-        void onThresholdingProcessSuccess(Bitmap bitmap);
+        void onThresholdingProcessSuccess(List<byte[]> bytesList);
 
-        void onImageLoaded(Bitmap bitmap);
+        void onThresholdingProcessSuccess(List<Component> components, byte[] bytes);
+
+        void onImageRecognized(Person person);
+
+        void onImageSaved(Person person);
     }
 
     interface Presenter {
-        void processGrayScale(Bitmap bitmap);
+        void processGrayScale(byte[] bytes);
 
-        void processConvolution(Bitmap bitmap);
+        void processConvolution(byte[] bytes);
 
-        void processEqualization(Bitmap bitmap);
+        void processEqualization(byte[] bytes);
 
-        void processThresholding(Bitmap bitmap);
+        void processThresholding(byte[] bytes);
 
-        void loadImage(String path);
+        void ProcessRecognition(byte[] bytes, List<Component> components);
+
+        void saveData(byte[] bytesResult, List<Component> components);
     }
 }

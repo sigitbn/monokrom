@@ -94,10 +94,14 @@ public class MainFragment extends Fragment implements MainContract.View {
     }
 
     @Override
-    public void startActivity(Class targetClass, String path) {
-        Intent intent = new Intent(getActivity(), targetClass);
-        intent.putExtra(MonokromConstant.IMAGE_PATH, path);
-        startActivity(intent);
+    public void startActivity(Class targetClass, byte[] bytes) {
+        try {
+            Intent intent = new Intent(getActivity(), targetClass);
+            intent.putExtra(MonokromConstant.IMAGE_BYTE_ARRAY, bytes);
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

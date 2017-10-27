@@ -14,8 +14,10 @@
         android:gravity="center"
         android:horizontalSpacing="@dimen/margin_small"
         android:numColumns="2"
+        android:padding="@dimen/margin_small"
         android:stretchMode="columnWidth"
-        android:verticalSpacing="@dimen/margin_small" />
+        android:verticalSpacing="@dimen/margin_small"
+        tools:listitem="@layout/card_item_image_with_text" />
 
     <Button
         android:id="@+id/btn_process"
@@ -23,4 +25,23 @@
         android:layout_height="wrap_content"
         android:text="@string/process" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/save" />
+
+        <Button
+            android:id="@+id/btn_check"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/check" />
+    </LinearLayout>
 </LinearLayout>

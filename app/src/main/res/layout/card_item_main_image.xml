@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="@dimen/margin_small">
+    android:paddingStart="@dimen/margin_small"
+    android:paddingTop="@dimen/margin_small">
 
     <ImageView
         android:id="@+id/iv_item"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:adjustViewBounds="true" />
+        android:layout_height="@dimen/default_image_height"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop" />
 
     <ImageButton
         android:id="@+id/btn_delete"
@@ -18,5 +21,15 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:background="@drawable/ic_delete" />
+
+    <TextView
+        android:id="@+id/tv_item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:padding="@dimen/margin_small"
+        android:textColor="@android:color/white"
+        tools:text="Image Name" />
 
 </RelativeLayout>
