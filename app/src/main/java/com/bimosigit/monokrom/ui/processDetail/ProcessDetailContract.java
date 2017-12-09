@@ -17,6 +17,8 @@ public class ProcessDetailContract {
 
         void onConvolutionProcessSuccess(byte[] bytes);
 
+        void onConvolutionProcessSuccess(List<byte[]> bytesList);
+
         void onEqualizationProcessSuccess(byte[] bytes);
 
         void onThresholdingProcessSuccess(List<byte[]> bytesList);
@@ -26,6 +28,9 @@ public class ProcessDetailContract {
         void onImageRecognized(Person person);
 
         void onImageSaved(Person person);
+
+        void onCheckedSkin(List<byte[]> faces);
+        void setLoading(boolean active);
     }
 
     interface Presenter {
@@ -40,5 +45,9 @@ public class ProcessDetailContract {
         void ProcessRecognition(byte[] bytes, List<Component> components);
 
         void saveData(byte[] bytesResult, List<Component> components);
+
+        void setSkin(byte[] bytes);
+
+        void checkSkin(byte[] bytes);
     }
 }

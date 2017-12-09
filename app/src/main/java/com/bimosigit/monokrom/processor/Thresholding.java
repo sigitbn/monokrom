@@ -1,7 +1,5 @@
 package com.bimosigit.monokrom.processor;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +20,6 @@ public class Thresholding {
                 thresholds.add(i);
             }
         }
-        Log.d("Threshold", "" + thresholds.size());
 
         // TODO: 10/22/17 Blackwhite, getobject, floodfill, goldenration
         // // TODO: 10/22/17 Simpan object yang memenuhi syarat, kalau tidak, Hapus

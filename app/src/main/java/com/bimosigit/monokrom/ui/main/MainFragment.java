@@ -16,8 +16,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bimosigit.monokrom.R;
+import com.bimosigit.monokrom.adapter.MainFirebaseRecyclerAdapter;
 import com.bimosigit.monokrom.constant.MonokromConstant;
+import com.bimosigit.monokrom.viewholder.ImageViewHolder;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,8 +43,13 @@ public class MainFragment extends Fragment implements MainContract.View {
     RecyclerView imagesRecyclerView;
 
     MainContract.Presenter presenter;
+    private FirebaseStorage storage;
+    private StorageReference imagesRef;
+    private DatabaseReference mDataReference;
 
     Unbinder unbinder;
+
+    private FirebaseRecyclerAdapter<String, ImageViewHolder> adapter;
 
     public MainFragment() {
         // Required empty public constructor
@@ -45,6 +58,10 @@ public class MainFragment extends Fragment implements MainContract.View {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mDataReference = FirebaseDatabase.getInstance().getReference("images");
+        storage = FirebaseStorage.getInstance();
+        imagesRef = storage.getReference().child("images");
 
         presenter = new MainPresenter(this);
     }
@@ -55,10 +72,25 @@ public class MainFragment extends Fragment implements MainContract.View {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         unbinder = ButterKnife.bind(this, view);
+        setRecyclerViewAdapter();
 
-        presenter.createRecyclerViewAdapter();
 
         return view;
+    }
+
+    private void setRecyclerViewAdapter() {
+        Query query = FirebaseDatabase.getInstance()
+                .getReference()
+                .child(MonokromConstant.FIREBASE_CHILD_IMAGES);
+
+        final FirebaseRecyclerOptions<String> options =
+                new FirebaseRecyclerOptions.Builder<String>()
+                        .setQuery(query, String.class)
+                        .build();
+
+        adapter = new MainFirebaseRecyclerAdapter(options,imagesRef, MainFragment.this);
+        imagesRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        imagesRecyclerView.setAdapter(adapter);
     }
 
     @OnClick(R.id.fab_home)
@@ -74,33 +106,17 @@ public class MainFragment extends Fragment implements MainContract.View {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_OPEN_GALLERY) {
 
+
                 Uri selectedImage = data.getData();
                 String[] filePathColumn = {MediaStore.Images.Media.DATA};
                 Cursor cursor = getActivity().getContentResolver().query(selectedImage, filePathColumn, null, null, null);
                 cursor.moveToFirst();
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 String mCurrentPhotoPath = cursor.getString(columnIndex);
+
                 presenter.uploadImage(mCurrentPhotoPath);
                 cursor.close();
             }
-        }
-    }
-
-    @Override
-    public void onRecyclerViewAdapterCreated(FirebaseRecyclerAdapter adapter) {
-
-        imagesRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        imagesRecyclerView.setAdapter(adapter);
-    }
-
-    @Override
-    public void startActivity(Class targetClass, byte[] bytes) {
-        try {
-            Intent intent = new Intent(getActivity(), targetClass);
-            intent.putExtra(MonokromConstant.IMAGE_BYTE_ARRAY, bytes);
-            startActivity(intent);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -113,12 +129,12 @@ public class MainFragment extends Fragment implements MainContract.View {
     @Override
     public void onStart() {
         super.onStart();
-        presenter.startAdapterListening();
+        adapter.startListening();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        presenter.stopAdapterListening();
+        adapter.stopListening();
     }
 }

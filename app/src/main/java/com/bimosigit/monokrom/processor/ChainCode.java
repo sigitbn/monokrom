@@ -1,7 +1,6 @@
 package com.bimosigit.monokrom.processor;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import com.bimosigit.monokrom.constant.MonokromConstant;
 import com.bimosigit.monokrom.model.Component;
@@ -9,6 +8,7 @@ import com.bimosigit.monokrom.util.BitmapConverter;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -28,14 +28,14 @@ public class ChainCode {
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
         int index = 0;
         boolean[] hits = new boolean[pixels.length];
-        boolean bad = false;
 
         while (index < pixels.length) {
             if (pixels[index] == MonokromConstant.PIXEL_WHITE && !hits[index]) {
 
-                String chainCode = getChainCode(index, pixels, width);
+                Component component = new Component();
+                component = getChainCode(index, pixels, width, component);
 
-                Queue<Integer> queue = new LinkedList<Integer>();
+                Queue<Integer> queue = new LinkedList<>();
                 queue.add(index);
 
                 int minimumIndex = pixels.length;
@@ -89,13 +89,23 @@ public class ChainCode {
                 int centroid_y = weight_y / totalPixel;
 
                 int centroid = (centroid_y * width + centroid_x);
+                component.setCentroid(centroid);
+                component.setComponentPixels(componentPixels);
 
+                int minimumY = minimumIndex / width;
+                int maximumY = maximumIndex / width;
                 int componentHeight = (maximumIndex / width - minimumIndex / width);
                 int componentLength = (maximumX - minimumX);
 
+                component.setHeight(componentHeight);
+                component.setLength(componentLength);
+                component.setMaxX(maximumX);
+                component.setMinY(minimumY);
+
+                component.setMaxY(maximumY);
+                component.setMinX(minimumX);
+
                 if (componentHeight > 26 && componentLength > 60) {
-                    Log.d("X Y", componentHeight + "," + componentLength);
-                    Component component = new Component(componentPixels, chainCode, centroid);
                     components.add(component);
                 }
             }
@@ -105,30 +115,27 @@ public class ChainCode {
     }
 
 
+    //Simplified using Android studio
     private static boolean floodFillImageDo(boolean[] hits, int index, int srcColor, int tgtColor, int[] pixels) {
-        if (index < 0) return false;
-        if (index > pixels.length - 1) return false;
+        return index >= 0
+                && index <= pixels.length - 1
+                && !hits[index] && pixels[index] == srcColor
+                && pixels[index] != tgtColor;
 
-        if (hits[index]) return false;
-
-        if (pixels[index] != srcColor)
-            return false;
-
-        if (pixels[index] == tgtColor)
-            return false;
-
-        return true;
     }
 
-    private static String getChainCode(int firstPixelIndex, int[] pixels, int width) {
+    private static Component getChainCode(int firstPixelIndex, int[] pixels, int width, Component component) {
         StringBuilder chainCodeString = new StringBuilder();
         int nextDirection = 3;
         int currentPixel = firstPixelIndex;
         boolean isFirst = true;
+        List<Integer> chainCodeCoordinates = new ArrayList<>();
 
         while (currentPixel != firstPixelIndex || isFirst) {
 
             isFirst = false;
+
+            chainCodeCoordinates.add(currentPixel);
 
             // Direction of chain code
             int topRight = currentPixel - width + 1;
@@ -257,7 +264,9 @@ public class ChainCode {
 
             }
         }
+        component.setChainCode(chainCodeString.toString());
+        component.setChainCodeCoordinate(chainCodeCoordinates);
 
-        return chainCodeString.toString();
+        return component;
     }
 }

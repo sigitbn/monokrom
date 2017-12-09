@@ -25,6 +25,9 @@ public class MergeByteImage {
             if (pixels[i] == MonokromConstant.PIXEL_WHITE || componentPixels[i] == MonokromConstant.PIXEL_WHITE) {
                 pixels[i] = MonokromConstant.PIXEL_WHITE;
             }
+            if (pixels[i] == Color.rgb(255, 0, 0) || componentPixels[i] == Color.rgb(255, 0, 0)) {
+                pixels[i] = Color.rgb(255, 0, 0);
+            }
         }
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
         return BitmapConverter.bitmap2ByteArray(bitmap);

@@ -3,6 +3,8 @@ package com.bimosigit.monokrom.model;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import java.util.List;
+
 /**
  * Created by sigitbn on 10/24/17.
  */
@@ -13,8 +15,19 @@ public class Person {
     @Exclude
     byte[] bytes;
 
+    int width;
+    int height;
     double goldenRatio;
     String name;
+
+    @Exclude
+    List<Component> components;
+
+    public int getDistance() {
+        return distance;
+    }
+
+    private int distance;
 
     public Person() {
     }
@@ -48,5 +61,34 @@ public class Person {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Exclude
+    public List<Component> getComponents() {
+        return components;
+    }
+    @Exclude
+    public void setComponents(List<Component> components) {
+        this.components = components;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public void setDistance(int distance) {
+        this.distance = distance;
     }
 }

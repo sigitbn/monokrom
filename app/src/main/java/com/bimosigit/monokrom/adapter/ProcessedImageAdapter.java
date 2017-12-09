@@ -1,6 +1,7 @@
 package com.bimosigit.monokrom.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bimosigit.monokrom.R;
+import com.bimosigit.monokrom.constant.MonokromConstant;
+import com.bimosigit.monokrom.ui.processDetail.ImageActivity;
+import com.bimosigit.monokrom.util.BitmapConverter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +66,17 @@ public class ProcessedImageAdapter extends BaseAdapter {
 
         textView.setText(key);
         imageView.setImageBitmap(bitmapHashMap.get(key));
+
+
+        final Intent intent = new Intent(context, ImageActivity.class);
+        intent.putExtra(MonokromConstant.IMAGE_BYTE_ARRAY, BitmapConverter.
+                bitmap2ByteArray(bitmapHashMap.get(key)));
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                context.startActivity(intent);
+            }
+        });
 
         return grid;
     }
